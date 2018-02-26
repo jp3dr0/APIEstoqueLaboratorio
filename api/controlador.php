@@ -109,19 +109,22 @@ public function getEntidade($mysqli, $id, $idBD, $view = null, $query = null){
 		// se recebeu uma query
 		if ($query != null){
 			$result = $mysqli->query($query);
-			$data[] = $result->fetch_assoc();
+			$data = $result->fetch_assoc();
 		}
 		// se recebeu uma view para fazer o select
 		else if ($view != null){
 			$query = "SELECT * FROM " . $view . " WHERE $idBD=$id";
 			$result = $mysqli->query($query);
-			$data[] = $result->fetch_assoc();
+			$data = $result->fetch_assoc();
 		}
 		// se nao receber view nem query vai fazer um select com o nomeEntidadeDB
 		else {
 			$query = "SELECT * FROM " . $this->nomeEntidadeDB . " WHERE $idBD=$id";
+			//echo($query);
 			$result = $mysqli->query($query);
-			$data[] = $result->fetch_assoc();
+			//var_dump($data);
+			$data = $result->fetch_assoc();
+			//$data = $result;
 		}	
 	} catch (Exception $e) {
 		$data = $e;
@@ -194,7 +197,7 @@ public function updateEntidade($mysqli, $id, $idBD, $body, $bindParamPersonaliza
 		// se nao receber view nem query vai fazer um insert normal na entidade
 		else {
 			// update todas as colunas
-			if(sizeof($json_aa) == sizeof($this->colunasDB)){
+			if(sizeof($json_aa) >= sizeof($this->colunasDB)){
 
 				//$query = "UPDATE `musicos` SET `nome` = ?, `idade` = ?, `instrumento` = ?, `sexo` = ?, `telefone` = ? WHERE `musicos`.`id` = $id;";
 
@@ -203,8 +206,20 @@ public function updateEntidade($mysqli, $id, $idBD, $body, $bindParamPersonaliza
 				$stmt = $mysqli->prepare($query);
 
 				foreach($json_aa as $key => $value) {
-				    $values[$key] = &$json_aa[$key];
+					if (in_array($key, $this->colunasDB)){
+						$values[$key] = &$json_aa[$key];
+					}
 				}
+				/*
+				foreach($this->colunasDB as $key => $value){
+					if (!in_array($value, $values)){
+						$values[$value] = null
+					}
+				}
+				*/
+				echo print_r($values);
+				echo print_r($json_aa);
+				echo print_r($colunas);
 
 				call_user_func_array(array($stmt, 'bind_param'), array_merge(array($this->bindAdapter), $values));
 
@@ -217,7 +232,7 @@ public function updateEntidade($mysqli, $id, $idBD, $body, $bindParamPersonaliza
 				
 			}
 			// update coluna(s) especificas
-			else {
+			else if (sizeof($json_aa) < sizeof($this->colunasDB)){
 				//$data = var_dump($this->colunasDB);
 				
 				$query = "UPDATE " . $this->nomeEntidadeDB . " SET " . implode(" = ?, ",$this->colunasDB) . " = ? " . "WHERE $idBD = $id;";
@@ -238,7 +253,6 @@ public function updateEntidade($mysqli, $id, $idBD, $body, $bindParamPersonaliza
 					"msg"=>$this->nomeEntidade." atualizado(a)",
 					"affected_rows"=>$stmt->affected_rows
 				];
-				
 			}
 		}			
 	} 
@@ -281,7 +295,7 @@ public function deleteEntidade($mysqli, $id, $idBD, $view = null, $query = null)
 					];
 			    }
 			    else {
-			    	$data = "Músico deletado";
+			    	$data = $this->nomeEntidade . " deletado";
 			    }
 
 			    /* close statement */

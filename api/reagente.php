@@ -5,6 +5,10 @@ $app->any('/reagente[/{id}]', function ($request, $response, $args) {
 
 	require_once('controlador.php');
 
+	require_once('getinterno.php');
+	
+	$getinterno = new GetInterno();
+
 	$body = $request->getBody();
 	$json_obj = json_decode ( $body);
 	$json_aa = json_decode ( $body ,true);
@@ -38,7 +42,39 @@ $app->any('/reagente[/{id}]', function ($request, $response, $args) {
     if ($metodo == 'GET'){
     	if(isset($args['id'])){
     		try {
-				$data = $controlador->getEntidade($mysqli, $id, $idBD);				
+				$data = $controlador->getEntidade($mysqli, $id, $idBD);
+
+				$id_classificacao = (int) $data['ClassificacaoReagente'];
+
+				$id_unidade = (int) $data['UnidadeReagente'];
+
+				$classificacao = $getinterno->getClassificacao($id_classificacao,$mysqli);
+
+				$unidade = $getinterno->getUnidade($id_unidade,$mysqli);
+
+				$data['ClassificacaoReagente'] = $classificacao;
+
+				$data['UnidadeReagente'] = $unidade;
+
+				//$data['classificacaoReagente'] = "meu pau";
+				/*
+				print_r($data);
+				
+				echo("<br>");
+				echo("<br>");
+
+				//printf($data);
+
+				echo("<br>");
+				echo("<br>");
+				
+				var_dump($data);
+
+				echo("<br>");
+				echo("<br>");
+
+				echo(json_encode($data, JSON_UNESCAPED_UNICODE));
+				*/
 			} 
 			catch (Exception $e) {
 				$data = $e;
@@ -47,6 +83,20 @@ $app->any('/reagente[/{id}]', function ($request, $response, $args) {
     	else{
     		try {
 				$data = $controlador->getCollection($mysqli);
+
+				foreach ($data as $key => $item) {
+					$id_classificacao = (int) $data[$key]['ClassificacaoReagente'];
+
+					$id_unidade = (int) $data[$key]['UnidadeReagente'];
+
+					$classificacao = $getinterno->getClassificacao($id_classificacao,$mysqli);
+
+					$unidade = $getinterno->getUnidade($id_unidade,$mysqli);
+
+					$data[$key]['ClassificacaoReagente'] = $classificacao;
+
+					$data[$key]['UnidadeReagente'] = $unidade;
+				}
 			} 
 			catch (Exception $e) {
 				$data = $e;

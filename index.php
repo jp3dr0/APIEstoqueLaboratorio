@@ -18,7 +18,7 @@ $app->add(function ($req, $res, $next) {
     return $response
             ->withHeader('Access-Control-Allow-Origin', '*')
             ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
-            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
 });
 
 header("Content-Type: application/json;charset=utf-8");
@@ -44,7 +44,7 @@ require_once('api/unidade.php');
 $app->any('/', function (Request $request, $response, $args) {
 	$data = json_encode ( [
 		"api" => "Estoque Laboratório IFRN",
-		"version" => "1.0.0"
+		"version" => "1.1.0"
 	], JSON_UNESCAPED_UNICODE);
 	return $response->withStatus(200)->withHeader('Content-Type', 'application/json')->write($data);    
 });

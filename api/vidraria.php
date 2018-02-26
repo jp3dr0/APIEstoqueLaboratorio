@@ -5,6 +5,10 @@ $app->any('/vidraria[/{id}]', function ($request, $response, $args) {
 
 	require_once('controlador.php');
 
+	require_once('getinterno.php');
+	
+	$getinterno = new GetInterno();
+
 	$body = $request->getBody();
 	$json_obj = json_decode ( $body);
 	$json_aa = json_decode ( $body ,true);
@@ -13,7 +17,7 @@ $app->any('/vidraria[/{id}]', function ($request, $response, $args) {
 
 	$idBD = 'idVidraria';
 
-	$colunas = explode("`, `", "`, ``, `imgVidraria`, `qtd_estoque_Vidraria`, `nomeVidraria`, `comentarioVidraria`, `valorCapacidadeVidraria`, `tamanhoCapacidadeVidraria`, `UnidadeVidraria");
+	$colunas = explode("`, `", "imgVidraria`, `qtd_estoque_Vidraria`, `nomeVidraria`, `comentarioVidraria`, `valorCapacidadeVidraria`, `tamanhoCapacidadeVidraria`, `UnidadeVidraria");
 
 	$bindAdapter = "sissiii";
 
@@ -38,7 +42,19 @@ $app->any('/vidraria[/{id}]', function ($request, $response, $args) {
     if ($metodo == 'GET'){
     	if(isset($args['id'])){
     		try {
-				$data = $controlador->getEntidade($mysqli, $id, $idBD);				
+				$data = $controlador->getEntidade($mysqli, $id, $idBD);
+				
+				$id_tamanho = (int) $data['tamanhoCapacidadeVidraria'];
+
+				$id_unidade = (int) $data['UnidadeVidraria'];
+
+				$tamanho = $getinterno->getTamanho($id_tamanho,$mysqli);
+
+				$unidade = $getinterno->getClassificacao($id_unidade,$mysqli);
+
+				$data['tamanhoCapacidadeVidraria'] = $tamanho;
+
+				$data['UnidadeVidraria'] = $unidade;
 			} 
 			catch (Exception $e) {
 				$data = $e;
@@ -47,6 +63,20 @@ $app->any('/vidraria[/{id}]', function ($request, $response, $args) {
     	else{
     		try {
 				$data = $controlador->getCollection($mysqli);
+
+				foreach ($data as $key => $item) {
+					$id_tamanho = (int) $data[$key]['tamanhoCapacidadeVidraria'];
+
+				$id_unidade = (int) $data[$key]['UnidadeVidraria'];
+
+				$tamanho = $getinterno->getTamanho($id_tamanho,$mysqli);
+
+				$unidade = $getinterno->getClassificacao($id_unidade,$mysqli);
+
+				$data[$key]['tamanhoCapacidadeVidraria'] = $tamanho;
+
+				$data[$key]['UnidadeVidraria'] = $unidade;
+				}
 			} 
 			catch (Exception $e) {
 				$data = $e;
@@ -74,6 +104,7 @@ $app->any('/vidraria[/{id}]', function ($request, $response, $args) {
 		}
     }
     else if ($metodo == 'PUT'){
+		
     	if(isset($args['id'])){
     		try {
 				// se tiver recebido uma collection
@@ -83,11 +114,11 @@ $app->any('/vidraria[/{id}]', function ($request, $response, $args) {
 				// se tiver recebido uma entidade
 				else{
 					// atualizar todas as colunas
-					if(sizeof($json_aa) == sizeof($colunas)){
+					if(sizeof($json_aa) >= sizeof($colunas)){
 						$data = $controlador->updateEntidade($mysqli, $id, $idBD, $body);
 					}
 					// colunas especificas
-					else{
+					else if (sizeof($json_aa) < sizeof($this->colunasDB)){
 						$data = $controlador->updateEntidade($mysqli, $id, $idBD, $body, $bindParamPersonalizado, $bind_json_param);
 					}				
 				}				
@@ -95,56 +126,16 @@ $app->any('/vidraria[/{id}]', function ($request, $response, $args) {
 			catch (Exception $e) {
 				$data = $e;
 			}
+			/*
+			$data = [
+				"json_aa" => print_r($json_aa),
+				"sizeof json_aa" => sizeof($json_aa),
+				"sizeof colunas" => sizeof($colunas)
+			];
+			*/
     	}
     	else{
     		$data = "recebi uma collection! nada feito";
-			/*
-			try {
-				$body = $request->getBody();
-
-				$json_obj = json_decode ( $body);
-				$json_aa = json_decode ( $body ,true);
-
-				// se tiver recebido uma collection
-				if(gettype($json_obj) == "array"){
-					$resposta = "recebi uma collection!";
-				}
-				// se tiver recebido uma entidade
-				else{
-					//echo "recebi uma entidade!";
-
-					$id = $request->getAttribute('id');
-
-					if($id == null){
-						$resposta = [
-							"erro" => "Body não recebeu nada ou não recebeu o id",
-							"id_recebido" => $id
-						];
-					}
-					else {
-						$nome = $json_aa['nome'];
-						$idade = $json_aa['idade'];
-						$instrumento = $json_aa['instrumento'];
-						$sexo = $json_aa['sexo'];
-						$telefone = $json_aa['telefone'];
-
-						$query = "UPDATE `musicos` SET `nome` = ?, `idade` = ?, `instrumento` = ?, `sexo` = ?, `telefone` = ? WHERE `musicos`.`id` = $id;";
-
-						$stmt = $mysqli->prepare($query);
-
-						$stmt->bind_param("siisi", $nome, $idade, $instrumento, $sexo, $telefone);
-
-						$stmt->execute();
-
-						$resposta = "Músico atualizado";
-					}
-				}
-				return $response->withStatus(200)->write(json_encode($resposta, JSON_UNESCAPED_UNICODE));
-			} 
-			catch (Exception $e) {
-				echo "Erro: ". $e;	
-			}
-			*/	
     	}
     }
     else if ($metodo == 'DELETE'){
