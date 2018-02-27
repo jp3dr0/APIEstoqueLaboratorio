@@ -50,7 +50,7 @@ $app->any('/vidraria[/{id}]', function ($request, $response, $args) {
 
 				$tamanho = $getinterno->getTamanho($id_tamanho,$mysqli);
 
-				$unidade = $getinterno->getClassificacao($id_unidade,$mysqli);
+				$unidade = $getinterno->getUnidade($id_unidade,$mysqli);
 
 				$data['tamanhoCapacidadeVidraria'] = $tamanho;
 
@@ -71,7 +71,7 @@ $app->any('/vidraria[/{id}]', function ($request, $response, $args) {
 
 				$tamanho = $getinterno->getTamanho($id_tamanho,$mysqli);
 
-				$unidade = $getinterno->getClassificacao($id_unidade,$mysqli);
+				$unidade = $getinterno->getUnidade($id_unidade,$mysqli);
 
 				$data[$key]['tamanhoCapacidadeVidraria'] = $tamanho;
 
