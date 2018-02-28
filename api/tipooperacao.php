@@ -2,7 +2,7 @@
 
 $app->any('/tipooperacao[/{id}]', function ($request, $response, $args) {
     require_once('conexao.php');
-
+	require_once('constants.php');
 	require_once('controlador.php');
 
 	$body = $request->getBody();
@@ -11,9 +11,7 @@ $app->any('/tipooperacao[/{id}]', function ($request, $response, $args) {
 
 	$id = $request->getAttribute('id');
 
-	$idBD = 'idTipoOperacao';
-
-	$colunas = explode("`, `", "nomeOperacao");
+	$colunas = explode("`, `", COLUNAS_TIPO_OPERACAO);
 
 	$bindAdapter = "s";
 
@@ -38,7 +36,7 @@ $app->any('/tipooperacao[/{id}]', function ($request, $response, $args) {
     if ($metodo == 'GET'){
     	if(isset($args['id'])){
     		try {
-				$data = $controlador->getEntidade($mysqli, $id, $idBD);				
+				$data = $controlador->getEntidade($mysqli, $id);				
 			} 
 			catch (Exception $e) {
 				$data = $e;
@@ -62,7 +60,7 @@ $app->any('/tipooperacao[/{id}]', function ($request, $response, $args) {
 			// se tiver recebido uma entidade
 			else{
 				if (isset($id)){
-					$data = $controlador->postEntidade($mysqli, $body, $id, $idBD);
+					$data = $controlador->postEntidade($mysqli, $body, $id);
 				}
 				else {
 					$data = $controlador->postEntidade($mysqli, $body);
@@ -84,11 +82,11 @@ $app->any('/tipooperacao[/{id}]', function ($request, $response, $args) {
 				else{
 					// atualizar todas as colunas
 					if(sizeof($json_aa) == sizeof($colunas)){
-						$data = $controlador->updateEntidade($mysqli, $id, $idBD, $body);
+						$data = $controlador->updateEntidade($mysqli, $id, $body);
 					}
 					// colunas especificas
 					else{
-						$data = $controlador->updateEntidade($mysqli, $id, $idBD, $body, $bindParamPersonalizado, $bind_json_param);
+						$data = $controlador->updateEntidade($mysqli, $id, $body, $bindParamPersonalizado, $bind_json_param);
 					}				
 				}				
 			} 
@@ -149,7 +147,7 @@ $app->any('/tipooperacao[/{id}]', function ($request, $response, $args) {
     }
     else if ($metodo == 'DELETE'){
     	try {
-			$data = $controlador->deleteEntidade($mysqli, $id, $idBD);
+			$data = $controlador->deleteEntidade($mysqli, $id);
 		} 
 		catch (Exception $e) {
 			$data = $e;

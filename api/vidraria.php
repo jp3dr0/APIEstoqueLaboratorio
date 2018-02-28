@@ -5,6 +5,8 @@ $app->any('/vidraria[/{id}]', function ($request, $response, $args) {
 
 	require_once('controlador.php');
 
+	require_once('constants.php');
+
 	require_once('getinterno.php');
 	
 	$getinterno = new GetInterno();
@@ -15,9 +17,7 @@ $app->any('/vidraria[/{id}]', function ($request, $response, $args) {
 
 	$id = $request->getAttribute('id');
 
-	$idBD = 'idVidraria';
-
-	$colunas = explode("`, `", "imgVidraria`, `qtd_estoque_Vidraria`, `nomeVidraria`, `comentarioVidraria`, `valorCapacidadeVidraria`, `tamanhoCapacidadeVidraria`, `UnidadeVidraria");
+	$colunas = explode("`, `", COLUNAS_VIDRARIA);
 
 	$bindAdapter = "sissiii";
 
@@ -42,19 +42,19 @@ $app->any('/vidraria[/{id}]', function ($request, $response, $args) {
     if ($metodo == 'GET'){
     	if(isset($args['id'])){
     		try {
-				$data = $controlador->getEntidade($mysqli, $id, $idBD);
+				$data = $controlador->getEntidade($mysqli, $id);
 				
-				$id_tamanho = (int) $data['tamanhoCapacidadeVidraria'];
+				$id_tamanho = (int) $data['tamanho'];
 
-				$id_unidade = (int) $data['UnidadeVidraria'];
+				$id_unidade = (int) $data['unidade'];
 
 				$tamanho = $getinterno->getTamanho($id_tamanho,$mysqli);
 
 				$unidade = $getinterno->getUnidade($id_unidade,$mysqli);
 
-				$data['tamanhoCapacidadeVidraria'] = $tamanho;
+				$data['tamanho'] = $tamanho;
 
-				$data['UnidadeVidraria'] = $unidade;
+				$data['unidade'] = $unidade;
 			} 
 			catch (Exception $e) {
 				$data = $e;
@@ -65,17 +65,17 @@ $app->any('/vidraria[/{id}]', function ($request, $response, $args) {
 				$data = $controlador->getCollection($mysqli);
 
 				foreach ($data as $key => $item) {
-					$id_tamanho = (int) $data[$key]['tamanhoCapacidadeVidraria'];
+					$id_tamanho = (int) $data[$key]['tamanho'];
 
-				$id_unidade = (int) $data[$key]['UnidadeVidraria'];
+				$id_unidade = (int) $data[$key]['unidade'];
 
 				$tamanho = $getinterno->getTamanho($id_tamanho,$mysqli);
 
 				$unidade = $getinterno->getUnidade($id_unidade,$mysqli);
 
-				$data[$key]['tamanhoCapacidadeVidraria'] = $tamanho;
+				$data[$key]['tamanho'] = $tamanho;
 
-				$data[$key]['UnidadeVidraria'] = $unidade;
+				$data[$key]['unidade'] = $unidade;
 				}
 			} 
 			catch (Exception $e) {
@@ -92,7 +92,7 @@ $app->any('/vidraria[/{id}]', function ($request, $response, $args) {
 			// se tiver recebido uma entidade
 			else{
 				if (isset($id)){
-					$data = $controlador->postEntidade($mysqli, $body, $id, $idBD);
+					$data = $controlador->postEntidade($mysqli, $body, $id);
 				}
 				else {
 					$data = $controlador->postEntidade($mysqli, $body);
@@ -115,11 +115,11 @@ $app->any('/vidraria[/{id}]', function ($request, $response, $args) {
 				else{
 					// atualizar todas as colunas
 					if(sizeof($json_aa) >= sizeof($colunas)){
-						$data = $controlador->updateEntidade($mysqli, $id, $idBD, $body);
+						$data = $controlador->updateEntidade($mysqli, $id, $body);
 					}
 					// colunas especificas
 					else if (sizeof($json_aa) < sizeof($this->colunasDB)){
-						$data = $controlador->updateEntidade($mysqli, $id, $idBD, $body, $bindParamPersonalizado, $bind_json_param);
+						$data = $controlador->updateEntidade($mysqli, $id, $body, $bindParamPersonalizado, $bind_json_param);
 					}				
 				}				
 			} 
@@ -140,7 +140,7 @@ $app->any('/vidraria[/{id}]', function ($request, $response, $args) {
     }
     else if ($metodo == 'DELETE'){
     	try {
-			$data = $controlador->deleteEntidade($mysqli, $id, $idBD);
+			$data = $controlador->deleteEntidade($mysqli, $id);
 		} 
 		catch (Exception $e) {
 			$data = $e;

@@ -32,7 +32,7 @@ return $obj;
 
 // CREATE
 
-public function postEntidade($mysqli, $body, $id = null, $idBD = null, $query = null, $bindParamPersonalizado = null){
+public function postEntidade($mysqli, $body, $id = null, $idBD = 'id', $query = null, $bindParamPersonalizado = null){
 	try {
 		$json_obj = json_decode ( $body);
 		$json_aa = json_decode ( $body ,true);
@@ -104,7 +104,7 @@ public function postCollection($mysqli, $id, $view = null, $query = null){
 
 // READ
 
-public function getEntidade($mysqli, $id, $idBD, $view = null, $query = null){
+public function getEntidade($mysqli, $id, $idBD = 'id', $view = null, $query = null){
 	try {
 		// se recebeu uma query
 		if ($query != null){
@@ -169,7 +169,7 @@ public function getCollection($mysqli, $view = null, $query = null){
 }
 
 // UPDATE
-public function updateEntidade($mysqli, $id, $idBD, $body, $bindParamPersonalizado = null, $bind_json_param = null, $query = null){
+public function updateEntidade($mysqli, $id, $idBD = 'id', $body, $bindParamPersonalizado = null, $bind_json_param = null, $query = null){
 	try {
 		$json_obj = json_decode ( $body);
 		$json_aa = json_decode ( $body ,true);
@@ -271,7 +271,7 @@ public function updateCollection($mysqli, $id, $view = null, $query = null){
 
 // DELETE
 
-public function deleteEntidade($mysqli, $id, $idBD, $view = null, $query = null){
+public function deleteEntidade($mysqli, $id, $idBD = 'id', $view = null, $query = null){
 	try {
 		if ($id == null){
 			$resposta = [

@@ -3,6 +3,8 @@
 $app->any('/reagente[/{id}]', function ($request, $response, $args) {
     require_once('conexao.php');
 
+	require_once('constants.php');
+
 	require_once('controlador.php');
 
 	require_once('getinterno.php');
@@ -15,9 +17,7 @@ $app->any('/reagente[/{id}]', function ($request, $response, $args) {
 
 	$id = $request->getAttribute('id');
 
-	$idBD = 'idReagente';
-
-	$colunas = explode("`, `", "imgReagente`, `qtd_estoque_Reagente_lacrado`, `qtd_estoque_Reagente_aberto`, `qtd_estoque_Reagente_total`, `nomeReagente`, `comentarioReagente`, `ClassificacaoReagente`, `valorCapacidadeReagente`, `UnidadeReagente");
+	$colunas = explode("`, `", COLUNAS_REAGENTE);
 
 	$bindAdapter = "siiissiii";
 
@@ -42,19 +42,19 @@ $app->any('/reagente[/{id}]', function ($request, $response, $args) {
     if ($metodo == 'GET'){
     	if(isset($args['id'])){
     		try {
-				$data = $controlador->getEntidade($mysqli, $id, $idBD);
+				$data = $controlador->getEntidade($mysqli, $id);
 
-				$id_classificacao = (int) $data['ClassificacaoReagente'];
+				$id_classificacao = (int) $data['classificacao'];
 
-				$id_unidade = (int) $data['UnidadeReagente'];
+				$id_unidade = (int) $data['unidade'];
 
 				$classificacao = $getinterno->getClassificacao($id_classificacao,$mysqli);
 
 				$unidade = $getinterno->getUnidade($id_unidade,$mysqli);
 
-				$data['ClassificacaoReagente'] = $classificacao;
+				$data['classificacao'] = $classificacao;
 
-				$data['UnidadeReagente'] = $unidade;
+				$data['unidade'] = $unidade;
 
 				//$data['classificacaoReagente'] = "meu pau";
 				/*
@@ -85,17 +85,17 @@ $app->any('/reagente[/{id}]', function ($request, $response, $args) {
 				$data = $controlador->getCollection($mysqli);
 
 				foreach ($data as $key => $item) {
-					$id_classificacao = (int) $data[$key]['ClassificacaoReagente'];
+					$id_classificacao = (int) $data[$key]['classificacao'];
 
-					$id_unidade = (int) $data[$key]['UnidadeReagente'];
+					$id_unidade = (int) $data[$key]['unidade'];
 
 					$classificacao = $getinterno->getClassificacao($id_classificacao,$mysqli);
 
 					$unidade = $getinterno->getUnidade($id_unidade,$mysqli);
 
-					$data[$key]['ClassificacaoReagente'] = $classificacao;
+					$data[$key]['classificacao'] = $classificacao;
 
-					$data[$key]['UnidadeReagente'] = $unidade;
+					$data[$key]['unidade'] = $unidade;
 				}
 			} 
 			catch (Exception $e) {
@@ -112,7 +112,7 @@ $app->any('/reagente[/{id}]', function ($request, $response, $args) {
 			// se tiver recebido uma entidade
 			else{
 				if (isset($id)){
-					$data = $controlador->postEntidade($mysqli, $body, $id, $idBD);
+					$data = $controlador->postEntidade($mysqli, $body, $id);
 				}
 				else {
 					$data = $controlador->postEntidade($mysqli, $body);
@@ -134,11 +134,11 @@ $app->any('/reagente[/{id}]', function ($request, $response, $args) {
 				else{
 					// atualizar todas as colunas
 					if(sizeof($json_aa) == sizeof($colunas)){
-						$data = $controlador->updateEntidade($mysqli, $id, $idBD, $body);
+						$data = $controlador->updateEntidade($mysqli, $id, $body);
 					}
 					// colunas especificas
 					else{
-						$data = $controlador->updateEntidade($mysqli, $id, $idBD, $body, $bindParamPersonalizado, $bind_json_param);
+						$data = $controlador->updateEntidade($mysqli, $id, $body, $bindParamPersonalizado, $bind_json_param);
 					}				
 				}				
 			} 
@@ -199,7 +199,7 @@ $app->any('/reagente[/{id}]', function ($request, $response, $args) {
     }
     else if ($metodo == 'DELETE'){
     	try {
-			$data = $controlador->deleteEntidade($mysqli, $id, $idBD);
+			$data = $controlador->deleteEntidade($mysqli, $id);
 		} 
 		catch (Exception $e) {
 			$data = $e;

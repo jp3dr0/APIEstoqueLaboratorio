@@ -2,7 +2,7 @@
 
 $app->any('/classificacao[/{id}]', function ($request, $response, $args) {
     require_once('conexao.php');
-
+	require_once('constants.php');
 	require_once('controlador.php');
 
 	$body = $request->getBody();
@@ -13,7 +13,7 @@ $app->any('/classificacao[/{id}]', function ($request, $response, $args) {
 
 	$idBD = 'idClassificacao';
 
-	$colunas = explode("`, `", "nomeClassificacao");
+	$colunas = explode("`, `", COLUNAS_CLASSIFICACAO);
 
 	$bindAdapter = "s";
 

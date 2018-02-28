@@ -1,9 +1,15 @@
 <?php
 
 $app->any('/usuario[/{id}]', function ($request, $response, $args) {
-    require_once('conexao.php');
+	require_once('conexao.php');
+	
+	require_once('constants.php');
 
 	require_once('controlador.php');
+
+	require_once('getinterno.php');
+	
+	$getinterno = new GetInterno();
 
 	$body = $request->getBody();
 	$json_obj = json_decode ( $body);
@@ -11,9 +17,7 @@ $app->any('/usuario[/{id}]', function ($request, $response, $args) {
 
 	$id = $request->getAttribute('id');
 
-	$idBD = 'idUsuario';
-
-	$colunas = explode("`, `", "nomeUsuario`, `Nivel_idNivel`, `senhaUsuario`, `emailUsuario`, `loginUsuario");
+	$colunas = explode("`, `", COLUNAS_USUARIO);
 
 	$bindAdapter = "sisss";
 
@@ -38,7 +42,13 @@ $app->any('/usuario[/{id}]', function ($request, $response, $args) {
     if ($metodo == 'GET'){
     	if(isset($args['id'])){
     		try {
-				$data = $controlador->getEntidade($mysqli, $id, $idBD);				
+				$data = $controlador->getEntidade($mysqli, $id);
+				
+				$id_nivel = (int) $data['nivel'];
+
+				$nivel = $getinterno->getNivel($id_nivel,$mysqli);
+
+				$data['nivel'] = $nivel;
 			} 
 			catch (Exception $e) {
 				$data = $e;
@@ -47,6 +57,14 @@ $app->any('/usuario[/{id}]', function ($request, $response, $args) {
     	else{
     		try {
 				$data = $controlador->getCollection($mysqli);
+
+				foreach ($data as $key => $item) {
+					$id_nivel = (int) $data[$key]['nivel'];
+
+					$nivel = $getinterno->getNivel($id_nivel,$mysqli);
+
+					$data[$key]['nivel'] = $nivel;
+				}
 			} 
 			catch (Exception $e) {
 				$data = $e;
@@ -62,7 +80,7 @@ $app->any('/usuario[/{id}]', function ($request, $response, $args) {
 			// se tiver recebido uma entidade
 			else{
 				if (isset($id)){
-					$data = $controlador->postEntidade($mysqli, $body, $id, $idBD);
+					$data = $controlador->postEntidade($mysqli, $body, $id);
 				}
 				else {
 					$data = $controlador->postEntidade($mysqli, $body);
@@ -84,11 +102,11 @@ $app->any('/usuario[/{id}]', function ($request, $response, $args) {
 				else{
 					// atualizar todas as colunas
 					if(sizeof($json_aa) == sizeof($colunas)){
-						$data = $controlador->updateEntidade($mysqli, $id, $idBD, $body);
+						$data = $controlador->updateEntidade($mysqli, $id, $body);
 					}
 					// colunas especificas
 					else{
-						$data = $controlador->updateEntidade($mysqli, $id, $idBD, $body, $bindParamPersonalizado, $bind_json_param);
+						$data = $controlador->updateEntidade($mysqli, $id, $body, $bindParamPersonalizado, $bind_json_param);
 					}				
 				}				
 			} 
@@ -149,7 +167,7 @@ $app->any('/usuario[/{id}]', function ($request, $response, $args) {
     }
     else if ($metodo == 'DELETE'){
     	try {
-			$data = $controlador->deleteEntidade($mysqli, $id, $idBD);
+			$data = $controlador->deleteEntidade($mysqli, $id);
 		} 
 		catch (Exception $e) {
 			$data = $e;

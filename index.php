@@ -41,39 +41,49 @@ require_once('api/tipooperacao.php');
 
 require_once('api/unidade.php');
 
-$app->any('/', function (Request $request, $response, $args) {
-	$data = json_encode ( [
-		"api" => "Estoque Laboratório IFRN",
-		"version" => "1.1.0"
-	], JSON_UNESCAPED_UNICODE);
-	return $response->withStatus(200)->withHeader('Content-Type', 'application/json')->write($data);    
-});
+// IGNORAR CODIGO ABAIXO. SAO SO TESTES DO SLIM
 
-$app->any('/teste[/{id}]', function (Request $request, $response, $args) {
-    // Apply changes to books or book identified by $args['id'] if specified.
-	// To check which method is used: $request->getMethod();
-	switch ($request->getMethod()) {
-		case 'GET':
-			$data = "READ";
-			break;
-		case 'PUT':
-			$data = "UPDATE";
-			break;
-		case 'POST':
-			$data = "CREATE";
-			break;
-		case 'DELETE':
-			$data = "DELETE";
-			break;
-		
-		default:
-			$data = "Erro ao encontrar verbo HTTP";
-			break;
-	}
-	if(isset($args['id'])){
-		$data = $data . " " . $args['id'];
-	}
-	return $response->withStatus(200)->withHeader('Content-Type', 'application/json')->write($data);    
+require_once('teste.php');
+
+$app->group('/v1', function () {
+	/*
+    $this->group('/auth', function() {
+        $this->map(['GET','POST'], '/login/', 'App\controllers\AuthController:login');
+        $this->map(['GET','POST'], '/logout/', 'App\controllers\AuthController:logout');
+    });
+	*/
+
+	$this->any('/um', 'Teste:um');
+
+	$this->any('/dois', 'Teste:dois');
+
+	$this->any('/teste[/{id}]', function (Request $request, $response, $args) {
+		// Apply changes to books or book identified by $args['id'] if specified.
+		// To check which method is used: $request->getMethod();
+		switch ($request->getMethod()) {
+			case 'GET':
+				$data = "READ";
+				break;
+			case 'PUT':
+				$data = "UPDATE";
+				break;
+			case 'POST':
+				$data = "CREATE";
+				break;
+			case 'DELETE':
+				$data = "DELETE";
+				break;
+			
+			default:
+				$data = "Erro ao encontrar verbo HTTP";
+				break;
+		}
+		if(isset($args['id'])){
+			$data = $data . " " . $args['id'];
+		}
+		return $response->withStatus(200)->withHeader('Content-Type', 'application/json')->write($data);    
+	});
+
 });
 
 // CHEATS
