@@ -1,5 +1,7 @@
 <?php
 
+header("Content-Type: application/json;charset=utf-8");
+
 require 'vendor/autoload.php';
 
 use \Psr\Http\Message\ServerRequestInterface as Request;
@@ -10,18 +12,40 @@ use \Psr\Http\Message\ResponseInterface as Response;
 $app = new \Slim\App([
     'settings' => [
         'displayErrorDetails' => true
-    ]
+	],
+	// pagina 404
+	'notFoundHandler' => function ($c) {
+		return function ($request, $response) use ($c) {
+			return $response->withStatus(404)
+				//->withHeader('Content-Type', 'text/html')
+				->withHeader('Content-Type', 'application/json')
+				->write(json_encode(['info' => "Nada encontrado."], JSON_UNESCAPED_UNICODE));
+		};
+	}
 ]);
 
-$app->add(function ($req, $res, $next) {
-    $response = $next($req, $res);
-    return $response
+// Middleware executado entre o processamento das requisições
+$app->add(function ($request, $response, $next) {
+	// codigo executado ANTES de processar a requisição
+	//$response->getBody()->write('BEFORE');
+	
+	//////////////////////////////////////////////////
+	$response = $next($request, $response);
+	//////////////////////////////////////////////////
+
+	// codigo executado DEPOIS de processar a requisição
+	//$response->getBody()->write('AFTER');
+
+	return $response
             ->withHeader('Access-Control-Allow-Origin', '*')
             ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
             ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
 });
 
-header("Content-Type: application/json;charset=utf-8");
+$app->any('/', function (Request $request, $response, $args) {
+	$data['info'] = "Bem-Vindo a API Estoque Lab!";
+	return $response->withStatus(200)->withHeader('Content-Type', 'application/json')->write(json_encode($data, JSON_UNESCAPED_UNICODE)); 
+});
 
 require_once('api/reagente.php');
 
@@ -41,85 +65,6 @@ require_once('api/tipooperacao.php');
 
 require_once('api/unidade.php');
 
-// IGNORAR CODIGO ABAIXO. SAO SO TESTES DO SLIM
-
-require_once('teste.php');
-
-$app->group('/v1', function () {
-	/*
-    $this->group('/auth', function() {
-        $this->map(['GET','POST'], '/login/', 'App\controllers\AuthController:login');
-        $this->map(['GET','POST'], '/logout/', 'App\controllers\AuthController:logout');
-    });
-	*/
-
-	$this->any('/um', 'Teste:um');
-
-	$this->any('/dois', 'Teste:dois');
-
-	$this->any('/teste[/{id}]', function (Request $request, $response, $args) {
-		// Apply changes to books or book identified by $args['id'] if specified.
-		// To check which method is used: $request->getMethod();
-		switch ($request->getMethod()) {
-			case 'GET':
-				$data = "READ";
-				break;
-			case 'PUT':
-				$data = "UPDATE";
-				break;
-			case 'POST':
-				$data = "CREATE";
-				break;
-			case 'DELETE':
-				$data = "DELETE";
-				break;
-			
-			default:
-				$data = "Erro ao encontrar verbo HTTP";
-				break;
-		}
-		if(isset($args['id'])){
-			$data = $data . " " . $args['id'];
-		}
-		return $response->withStatus(200)->withHeader('Content-Type', 'application/json')->write($data);    
-	});
-
-});
-
-// CHEATS
-
-// CREATE/POST ENTITY
-	/*
-
-	//$nome = $request->getParam('nome');
-
-	//$nome = $request->getParsedBody()['nome'];
-
-	//$nome = $request->getAttribute('nome');
-
-	//$app = \Slim\Slim::getInstance ();
-
-	//$app->request()->getBody();
-
-	//$nome = $_POST['nome'];
-
-	echo json_encode($nome, JSON_UNESCAPED_UNICODE);
-	*/
-
-	/*
-	$stmt->execute([
-	":nome" => $nome,
-	":idade" => $idade,
-	":instrumento" => $instrumento,
-	":sexo" => $sexo,
-	":telefone" => $telefone
-	]);﻿
-	*/
-
-	/*
-	$stmt->bind_param("ssisi", $nome, $idade, $instrumento, $sexo, $telefone);
-
-	$stmt->execute();
-	*/
+require_once('api/teste/teste.php');
 
 $app->run();
