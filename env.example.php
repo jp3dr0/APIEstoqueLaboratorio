@@ -1,8 +1,8 @@
 <?php
 
-putenv('DISPLAY_ERRORS_DETAILS=' . false);
-putenv('CODEEASY_GERENCIADOR_DE_LOJAS_MYSQL_HOST=');
-putenv('CODEEASY_GERENCIADOR_DE_LOJAS_MYSQL_DBNAME=');
-putenv('CODEEASY_GERENCIADOR_DE_LOJAS_MYSQL_USER=');
-putenv('CODEEASY_GERENCIADOR_DE_LOJAS_MYSQL_PASSWORD=');
-putenv('CODEEASY_GERENCIADOR_DE_LOJAS_MYSQL_PORT=');
+putenv('DISPLAY_ERRORS_DETAILS=' . true);
+putenv('MYSQL_HOST=' . "localhost");
+putenv('MYSQL_DBNAME=' . "estoque_lab");
+putenv('MYSQL_USER=' . "root");
+putenv('MYSQL_PASSWORD=' . "");
+putenv('MYSQL_PORT=' . "3306");
