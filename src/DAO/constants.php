@@ -7,4 +7,4 @@ const COLUNAS_TAMANHO = "nome";
 const COLUNAS_TIPO_OPERACAO = "nome";
 const COLUNAS_UNIDADE = "nome";
 const COLUNAS_USUARIO = "nome`, `nivel`, `senha`, `email`, `login";
-const COLUNAS_VIDRARIA = "img`, `qtd`, `nome`, `comentario`, `valor`, `tamanho`, `unidade";
+const COLUNAS_VIDRARIA = "img`, `qtdEstoque`, `nome`, `comentario`, `valor`, `tamanho`, `unidade";

@@ -17,5 +17,7 @@ abstract class Conexao
             \PDO::ATTR_ERRMODE,
             \PDO::ERRMODE_EXCEPTION
         );
+        $this->pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
+        $this->pdo->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
     }
 }

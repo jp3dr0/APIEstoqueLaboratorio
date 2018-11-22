@@ -16,7 +16,7 @@ $app->add(function (Request $request, Response $response, callable $next): Respo
     //$response->getBody()->write('AFTER');
 
     return $response
-        ->withHeader('Access-Control-Allow-Origin', '*')
-        ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+        ->withHeader('Access-Control-Allow-Origin', '*');
+        //->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+        //->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 });

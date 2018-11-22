@@ -28,6 +28,7 @@ class GenericDAO extends Conexao
 
     public function get(bool $desc = false, int $id = null, string $idBD = 'id', string $view = null, string $queryPersonalizada = null)
     {
+        $data = null;
         try {
             // se recebeu uma query
             if ($queryPersonalizada != null) {
@@ -59,6 +60,7 @@ class GenericDAO extends Conexao
             $data = $e;
         } finally {
             //var_dump($data);
+            //return isset($data) ? $data : null;
             return $data;
         }
     }
@@ -119,6 +121,8 @@ class GenericDAO extends Conexao
                 // sizeof($json_aa) == sizeof($this->colunasDB)
 
                 $error = false;
+
+                //var_dump($this->colunasDB);
 
                 foreach ($json_aa as $key => $value) {
                     if (!in_array($key, $this->colunasDB)) {
