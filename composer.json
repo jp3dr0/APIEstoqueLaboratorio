@@ -1,6 +1,8 @@
 {
     "require": {
-        "slim/slim": "^3.9"
+        "slim/slim": "^3.9",
+        "tuupola/cors-middleware": "^0.9.1",
+        "tuupola/slim-jwt-auth": "^3.1"
     },
     "autoload": {
         "psr-4": {

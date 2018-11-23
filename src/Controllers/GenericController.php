@@ -44,7 +44,7 @@ abstract class GenericController
         }
          */
 
-        return $response->withHeader('Access-Control-Allow-Origin', '*')->withStatus($error ? $error : 200)->withJson($data);
+        return $response->withStatus($error ? $error : 200)->withJson($data);
     }
 
 }

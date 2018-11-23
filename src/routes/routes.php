@@ -24,6 +24,43 @@ $app = new \Slim\App([
         };
     },
 ]);
+/*
+$app->add(new Tuupola\Middleware\CorsMiddleware([
+    "origin" => ["*"],
+    "methods" => ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],    
+    "headers.allow" => ["Origin", "Content-Type", "Authorization", "Accept", "ignoreLoadingBar", "X-Requested-With", "Access-Control-Allow-Origin"],
+    "headers.expose" => [],
+    "credentials" => true,
+    "cache" => 0,        
+]));
+*/
+
+$app->add(new Tuupola\Middleware\JwtAuthentication([
+    "secret" => "SECRET", # the secret key
+    "secure" => false, # true to enable HTTPS only
+    "rules" => [
+        new Tuupola\Middleware\JwtAuthentication\RequestPathRule([
+            // degenerate access to URI's
+            "path" => [
+                "/test"
+            ],
+            // allow access to specific URI's without a token
+            "passthrough" => [
+                "/test/hello"
+            ]
+        ]),
+        new Tuupola\Middleware\JwtAuthentication\RequestMethodRule([
+            "passthrough" => ["OPTIONS"]
+        ])
+    ],
+    "error" => function ($request, $response, $arguments) {
+        $data["status"] = "error";
+        $data["message"] = $arguments["message"];
+        return $response->withStatus(401)
+            ->withHeader("Content-Type", "application/json")
+            ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+    }
+]));
 
 require_once __DIR__ . '\..\teste\teste.php';
 
