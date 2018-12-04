@@ -7,7 +7,7 @@ use src\DAO\GenericDAO;
 abstract class GenericController
 {
 
-    public function processRequest(GenericDAO $dao, $request, $response, $args): Response
+    public function processRequest(GenericDAO $dao, $request, $response, $args, bool $onlyAdmin = false): Response
     {
         $error = null;
         $data = null;
@@ -33,7 +33,7 @@ abstract class GenericController
                 break;
             default:
                 $error = 400;
-                
+
                 $data = "Erro ao encontrar verbo HTTP";
                 break;
         }
@@ -43,7 +43,9 @@ abstract class GenericController
         $data = $data . " " . $args['id'];
         }
          */
-
+        if ($onlyAdmin && $request->getAttribute('decoded_token_data')['nivel'] < 3) {
+            return $response->withStatus(401)->withJson(["msg" => "Você não tem as permissões necessárias para fazer isso."]);
+        }
         return $response->withStatus($error ? $error : 200)->withJson($data);
     }
 

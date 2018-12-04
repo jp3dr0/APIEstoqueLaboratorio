@@ -9,7 +9,7 @@ final class NivelController extends GenericController implements RouteableInterf
 {
     public function handleRequest(Request $request, Response $response, array $args): Response
     {
-        return $this->processRequest(new GenericDAO("Nível", "Niveis", "nivel", explode("`, `", COLUNAS_NIVEL)), $request, $response, $args);
+        return $this->processRequest(new GenericDAO("Nível", "Niveis", "nivel", explode("`, `", COLUNAS_NIVEL)), $request, $response, $args, true);
     }
 
 }

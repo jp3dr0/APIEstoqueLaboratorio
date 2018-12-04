@@ -9,7 +9,7 @@ final class TipoOperacaoController extends GenericController implements Routeabl
 {
     public function handleRequest(Request $request, Response $response, array $args): Response
     {
-        return $this->processRequest(new GenericDAO("Tipo de Operação", "Tipo de Operações", "tipooperacao", explode("`, `", COLUNAS_TIPO_OPERACAO)), $request, $response, $args);
+        return $this->processRequest(new GenericDAO("Tipo de Operação", "Tipo de Operações", "tipooperacao", explode("`, `", COLUNAS_TIPO_OPERACAO)), $request, $response, $args, true);
     }
 
 }

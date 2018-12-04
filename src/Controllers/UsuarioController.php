@@ -9,7 +9,7 @@ final class UsuarioController extends GenericController implements RouteableInte
 {
     public function handleRequest(Request $request, Response $response, array $args): Response
     {
-        return $this->processRequest(new GenericDAO("Usuário", "Usuários", "usuario", explode("`, `", COLUNAS_USUARIO)), $request, $response, $args);
+        return $this->processRequest(new GenericDAO("Usuário", "Usuários", "usuario", explode("`, `", COLUNAS_USUARIO)), $request, $response, $args, true);
     }
 
 }

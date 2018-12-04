@@ -22,7 +22,7 @@ final class ClassificacaoController extends GenericController implements Routeab
 
     public function handleRequest(Request $request, Response $response, array $args): Response
     {
-        return $this->processRequest($this->getDAO(), $request, $response, $args);
+        return $this->processRequest($this->getDAO(), $request, $response, $args, true);
     }
 
 }

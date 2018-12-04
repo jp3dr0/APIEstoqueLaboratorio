@@ -22,7 +22,7 @@ final class TamanhoController extends GenericController implements RouteableInte
 
     public function handleRequest(Request $request, Response $response, array $args): Response
     {
-        return $this->processRequest($this->getDAO(), $request, $response, $args);
+        return $this->processRequest($this->getDAO(), $request, $response, $args, true);
     }
 
 }

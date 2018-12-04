@@ -25,7 +25,7 @@ final class ReagenteController extends GenericController implements RouteableInt
         if ($request->getMethod() == "GET") {
             return isset($args['id']) ? $this->getReagente($response, $request->getAttribute('id')) : $this->getReagentes($response);
         } else {
-            return $this->processRequest($this->getDAO(), $request, $response, $args);
+            return $this->processRequest($this->getDAO(), $request, $response, $args, true);
         }
     }
 
