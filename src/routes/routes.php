@@ -27,43 +27,47 @@ $app = new \Slim\App([
         };
     },
 ]);
+
 /*
 $app->add(new Tuupola\Middleware\CorsMiddleware([
 "origin" => ["*"],
 "methods" => ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-"headers.allow" => ["Origin", "Content-Type", "Authorization", "Accept", "ignoreLoadingBar", "X-Requested-With", "Access-Control-Allow-Origin"],
+"headers.allow" => ["Origin", "Content-Type", "Authorization", "Accept", "ignoreLoadingBar", "X-Requested-With", "Access-Control-Allow-Origin", "content-type"],
 "headers.expose" => [],
 "credentials" => true,
 "cache" => 0,
 ]));
  */
-
 $app->add(new Tuupola\Middleware\JwtAuthentication([
     "secret" => getenv('JWT_SECRET'), # the secret key
     "secure" => false, # true to enable HTTPS only
     /*
     "rules" => [
+
     new Tuupola\Middleware\JwtAuthentication\RequestPathRule([
     // degenerate access to URI's
     "path" => [
     "/test",
     "/eae"
     ],
+
     // allow access to specific URI's without a token
     "passthrough" => [
-    "/test/hello"
-    ]
-    ]),
+    "/login",
+    "/registrar",
+    ],
     new Tuupola\Middleware\JwtAuthentication\RequestMethodRule([
-    "passthrough" => ["OPTIONS"]
-    ])
+    "passthrough" => ["OPTIONS"],
+    ]),
     ],
      */
     "path" => "/v1", /* or ["/api", "/admin"] */
+
     "ignore" => [
         "/login",
         "/registrar",
     ],
+
     "attribute" => "decoded_token_data",
     "algorithm" => ["HS256"],
     "error" => function ($response, $arguments) {
@@ -94,6 +98,7 @@ function welcome(Request $request, Response $response, $args): Response
 }
 
 // =========================================
+
 $app->post('/login', function (Request $request, Response $response, array $args) {
 
     // receber email e senha ou login e senha como input, fazer uma consulta no dao de users com where e por no payload do token o nivel do usuario, se ele existir.
@@ -114,6 +119,10 @@ $app->post('/login', function (Request $request, Response $response, array $args
 
 });
 
+$app->options('/login', function (Request $request, Response $response, array $args) {
+    return $response->withStatus(200)->withJson(["msg" => "ok"]);
+});
+
 $app->post('/registrar', function (Request $request, Response $response, array $args) {
 
     $usuarioController = new UsuarioController();
@@ -129,9 +138,15 @@ $app->post('/registrar', function (Request $request, Response $response, array $
 
 });
 
+$app->options('/registrar', function (Request $request, Response $response, array $args) {
+    return $response->withStatus(200)->withJson(["msg" => "ok"]);
+});
+
 $app->any('/', "welcome");
 
 $app->group('/v1', function () use ($app) {
+
+    
 
     // todos podem dar get, o resto é só tecnico
     $app->any('/reagente[/{id}]', ReagenteController::class . ':handleRequest');
@@ -152,17 +167,26 @@ $app->group('/v1', function () use ($app) {
 })->add(function ($request, $response, $next) {
     //$response->getBody()->write('It is now ');
 
+    //echo $request->getMethod();
+
+    if($request->getMethod() == 'OPTIONS'){
+        return $response->withStatus(200)->withJson(["msg" => "ok"]);
+    }
+
     $payload = $request->getAttribute('decoded_token_data');
+    //return $response->withStatus(200)->withJson(["headers" => $request->getHeaders(), 'token' => $request->getHeader('Authorization'), 'payload' => $payload]);
 
     //print_r($payload);
 
     // verificar se o token possui o nivel no payload
-    if (isset($payload) && isset($payload['nivel']) && isset($payload['id']) && $payload['nivel'] >= 0) {
+    // && isset($payload['nivel']) && isset($payload['id']) && $payload['nivel'] >= 0
+    if (isset($payload)) {
         //return $response->withJson($payload);
         $response = $next($request, $response);
         //$response->getBody()->write('. Enjoy!');
     } else {
-        return $response->withStatus(401)->withJson(["msg" => "Não foi encontrado o claim 'nivel' ou 'id' no payload do JWT."]);
+        return $response->withStatus(401)->withJson(["msg" => "Não foi encontrado o claim 'nivel' ou 'id' no payload do JWT.", "payload" => $payload, "headers" => $request->getHeaders(), 'token' => $request->getHeader('Authorization')]);
+
     }
 
     return $response;

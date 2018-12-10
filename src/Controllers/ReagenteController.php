@@ -36,6 +36,9 @@ final class ReagenteController extends GenericController implements RouteableInt
             case 'DELETE':
                 return $allowed ? $this->deleteReagente($request, $response) : $response->withStatus(401)->withJson(["msg" => "Você não tem as permissões necessárias para fazer isso."]);
                 break;
+            case 'OPTIONS':
+                return $response->withStatus(200)->withJson(["msg" => "ok"]);
+                break;
             default:
                 return $this->processRequest($this->getDAO(), $request, $response, $args, true);
                 break;
