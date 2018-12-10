@@ -5,12 +5,13 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use src\DAO\GenericDAO;
 
-final class ReagenteController extends GenericController implements RouteableInterface
+class ItemController extends GenericController implements RouteableInterface
 {
 
     protected $dao;
+    private $itemType;
 
-    public function __construct()
+    public function __construct(string $itemType)
     {
         $this->dao = new GenericDAO("Reagente", "Reagentes", "reagente", explode("`, `", COLUNAS_REAGENTE));
     }
@@ -25,16 +26,16 @@ final class ReagenteController extends GenericController implements RouteableInt
         $allowed = $request->getAttribute('decoded_token_data')['nivel'] >= 3;
         switch ($request->getMethod()) {
             case 'GET':
-                return isset($args['id']) ? $this->getReagente($response, $request->getAttribute('id')) : $this->getReagentes($response);
+                return isset($args['id']) ? $this->getItem($response, $request->getAttribute('id')) : $this->getItens($response);
                 break;
             case 'POST':
-                return $allowed ? $this->createReagente($request, $response) : $response->withStatus(401)->withJson(["msg" => "Você não tem as permissões necessárias para fazer isso."]);
+                return $allowed ? $this->create($request, $response) : $response->withStatus(401)->withJson(["msg" => "Você não tem as permissões necessárias para fazer isso."]);
                 break;
             case 'PUT':
-                return $allowed ? $this->updateReagente($request, $response) : $response->withStatus(401)->withJson(["msg" => "Você não tem as permissões necessárias para fazer isso."]);
+                return $allowed ? $this->update($request, $response) : $response->withStatus(401)->withJson(["msg" => "Você não tem as permissões necessárias para fazer isso."]);
                 break;
             case 'DELETE':
-                return $allowed ? $this->deleteReagente($request, $response) : $response->withStatus(401)->withJson(["msg" => "Você não tem as permissões necessárias para fazer isso."]);
+                return $allowed ? $this->delete($request, $response) : $response->withStatus(401)->withJson(["msg" => "Você não tem as permissões necessárias para fazer isso."]);
                 break;
             default:
                 return $this->processRequest($this->getDAO(), $request, $response, $args, true);
@@ -50,8 +51,6 @@ final class ReagenteController extends GenericController implements RouteableInt
         $qtd = json_decode($request->getBody(), true)['qtd'];
         $id = $request->getAttribute('id');
 
-        $userId = $request->getAttribute('decoded_token_data')['id'];
-
         if ($allowed) {
             $obj = $this->getDAO()->get(false, $id);
             $lacrado = $obj['qtdEstoqueLacrado'];
@@ -66,8 +65,8 @@ final class ReagenteController extends GenericController implements RouteableInt
                     $operacaoController = new OperacaoController();
 
                     $data = $operacaoController->create([
-                        "reagente" => $id,
-                        "usuario" => $userId,
+                        $this->itemType => $id,
+                        "usuario" => 2,
                         "tipoOperacao" => 1,
                         "pendente" => 1,
                         "qtd" => $qtd,
@@ -86,8 +85,8 @@ final class ReagenteController extends GenericController implements RouteableInt
                     if ($post['affected_rows'] > 0) {
 
                         $data = $operacaoController->create([
-                            "reagente" => $id,
-                            "usuario" => $userId,
+                            $this->itemType => $id,
+                            "usuario" => 2,
                             "tipoOperacao" => 2,
                             "qtd" => $qtd,
                         ]);
@@ -96,17 +95,17 @@ final class ReagenteController extends GenericController implements RouteableInt
                 // com defeito
                 else {
                     $data = $operacaoController->create([
-                        "reagente" => $id,
-                        "usuario" => $userId,
+                        $this->itemType => $id,
+                        "usuario" => 2,
                         "tipoOperacao" => 3,
                         "qtd" => $qtd,
                     ]);
                 }
 
-                $pendentes = $operacaoController->getPendentes($userId);
+                $pendentes = $operacaoController->getPendentes(2);
 
                 foreach ($pendentes as $key => $value) {
-                    if ($value['reagente'] == $id && $value['qtd'] == $qtd) {
+                    if ($value[$this->itemType] == $id && $value['qtd'] == $qtd) {
                         $operacaoController->setPendente($value['id'], 0);
                         break;
                     }
@@ -120,22 +119,22 @@ final class ReagenteController extends GenericController implements RouteableInt
         }
     }
 
-    private function createReagente(Request $request, Response $response): Response
+    private function create(Request $request, Response $response): Response
     {
         $post = $this->getDAO()->post($request->getBody());
         if ($post['affected_rows'] > 0) {
             $operacaoController = new OperacaoController();
             $id = $this->getDAO()->lastInserted();
             $data = $operacaoController->create([
-                "reagente" => $id,
-                "usuario" => $request->getAttribute('decoded_token_data')['id'],
+                $this->itemType => $id,
+                "usuario" => 2,
                 "tipoOperacao" => 4,
             ]);
         }
         return $response->withStatus(200)->withJson($data);
     }
 
-    private function deleteReagente(Request $request, Response $response): Response
+    private function delete(Request $request, Response $response): Response
     {
         //echo $request->getAttribute('id');
         $post = $this->getDAO()->delete($request->getAttribute('id'), true);
@@ -144,62 +143,27 @@ final class ReagenteController extends GenericController implements RouteableInt
             $operacaoController = new OperacaoController();
             $id = $request->getAttribute('id');
             $data = $operacaoController->create([
-                "reagente" => $id,
-                "usuario" => $request->getAttribute('decoded_token_data')['id'],
+                $this->itemType => $id,
+                "usuario" => 2,
                 "tipoOperacao" => 5,
             ]);
         }
         return $response->withStatus(200)->withJson($data);
     }
 
-    private function updateReagente(Request $request, Response $response): Response
+    private function update(Request $request, Response $response): Response
     {
         $post = $this->getDAO()->post($request->getBody(), $request->getAttribute('id'));
         if ($post['affected_rows'] > 0) {
             $operacaoController = new OperacaoController();
             $id = $request->getAttribute('id');
             $data = $operacaoController->create([
-                "reagente" => $id,
-                "usuario" => $request->getAttribute('decoded_token_data')['id'],
+                $this->itemType => $id,
+                "usuario" => 2,
                 "tipoOperacao" => 6,
             ]);
         }
         return $response->withStatus(200)->withJson($data);
-    }
-
-    private function getReagentes(Response $response): Response
-    {
-        $objs = $this->getDAO()->get(true, null, true);
-
-        for ($i = 0; $i < sizeof($objs); $i++) {
-            $objs[$i] = $this->joinObjects($objs[$i]);
-        }
-
-        return $response->withStatus(200)->withJson($objs);
-    }
-
-    private function getReagente(Response $response, int $id): Response
-    {
-        $obj = $this->getDAO()->get(false, $id);
-        $obj = $this->joinObjects($obj);
-        return $response->withStatus(200)->withJson($obj);
-    }
-
-    private function joinObjects($obj)
-    {
-        $id_classificacao = (int) $obj['classificacao'];
-
-        $id_unidade = (int) $obj['unidade'];
-
-        $classificacaoController = new ClassificacaoController();
-
-        $unidadeController = new UnidadeController();
-
-        $obj['classificacao'] = $id_classificacao == null ? null : $classificacaoController->getDAO()->get(false, $id_classificacao);
-
-        $obj['unidade'] = $id_unidade == null ? null : $unidadeController->getDAO()->get(false, $id_unidade);
-
-        return $obj;
     }
 
 }

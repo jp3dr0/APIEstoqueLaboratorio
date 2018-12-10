@@ -9,11 +9,10 @@ use src\Controllers\TipoOperacaoController;
 use src\Controllers\UnidadeController;
 use src\Controllers\UsuarioController;
 use src\Controllers\VidrariaController;
-use \Firebase\JWT\JWT;
+use \Psr\Http\Message\ServerRequestInterface as Request;
 
 //use Slim\Http\Request;
 //use Slim\Http\Response;
-use \Psr\Http\Message\ServerRequestInterface as Request;
 
 require_once __DIR__ . '\..\DAO\constants.php';
 
@@ -63,6 +62,7 @@ $app->add(new Tuupola\Middleware\JwtAuthentication([
     "path" => "/v1", /* or ["/api", "/admin"] */
     "ignore" => [
         "/login",
+        "/registrar",
     ],
     "attribute" => "decoded_token_data",
     "algorithm" => ["HS256"],
@@ -101,51 +101,31 @@ $app->post('/login', function (Request $request, Response $response, array $args
 
     // implementar endpoint de registro tbm
 
-    $input = $request->getParsedBody();
-    /*
-    $sql = "SELECT * FROM users WHERE email= :email";
-    $sth = $this->db->prepare($sql);
-    $sth->bindParam("email", $input['email']);
-    $sth->execute();
-    $user = $sth->fetchObject();
+    $usuarioController = new UsuarioController();
 
-    // verify email address.
-    if(!$user) {
-    return $this->response->withJson(['error' => true, 'message' => 'These credentials do not match our records.']);
+    $user = $usuarioController->login($request->getBody());
+
+    if ($user) {
+        $token = $usuarioController->getToken($user);
+        return $this->response->withJson(['token' => $token]);
+    } else {
+        return $response->withStatus(401)->withJson(["msg" => "Usuário não encontrado."]);
     }
 
-    // verify password.
-    if (!password_verify($input['password'],$user->password)) {
-    return $this->response->withJson(['error' => true, 'message' => 'These credentials do not match our records.']);
+});
+
+$app->post('/registrar', function (Request $request, Response $response, array $args) {
+
+    $usuarioController = new UsuarioController();
+
+    $user = $usuarioController->registrar($request->getBody());
+
+    if ($user) {
+        $token = $usuarioController->getToken($user);
+        return $this->response->withJson(['token' => $token]);
+    } else {
+        return $response->withStatus(401)->withJson(["msg" => "Erro ao registrar."]);
     }
-    $settings = $this->get('settings'); // get settings array.
-     */
-
-    //$token = JWT::encode(['id' => $user->id, 'email' => $user->email], "SECRET", "HS256");
-    $token = JWT::encode($input, getenv('JWT_SECRET'), "HS256");
-
-    // implementar expire time
-
-    /*
-    use \Firebase\JWT\JWT;
-    use \Tuupola\Base62;
-
-    $now = new DateTime();
-    $future = new DateTime("now +2 hours");
-    $jti = Base62::encode(random_bytes(16));
-
-    $secret = "your_secret_key";
-
-    $payload = [
-    "jti" => $jti,
-    "iat" => $now->getTimeStamp(),
-    "nbf" => $future->getTimeStamp()
-    ];
-
-    $token = JWT::encode($payload, $secret, "HS256");
-     */
-
-    return $this->response->withJson(['token' => $token]);
 
 });
 
@@ -153,9 +133,11 @@ $app->any('/', "welcome");
 
 $app->group('/v1', function () use ($app) {
 
-    // todos podem dar get, o resto é só admin
+    // todos podem dar get, o resto é só tecnico
     $app->any('/reagente[/{id}]', ReagenteController::class . ':handleRequest');
+    $app->post('/reagente/{id}/operacao', ReagenteController::class . ':operacao');
     $app->any('/vidraria[/{id}]', VidrariaController::class . ':handleRequest');
+    $app->post('/vidraria/{id}/operacao', VidrariaController::class . ':operacao');
 
     // só admin que faz tudo
     $app->any('/classificacao[/{id}]', ClassificacaoController::class . ':handleRequest');
@@ -175,12 +157,12 @@ $app->group('/v1', function () use ($app) {
     //print_r($payload);
 
     // verificar se o token possui o nivel no payload
-    if (isset($payload) && isset($payload['nivel']) && $payload['nivel'] >= 0) {
+    if (isset($payload) && isset($payload['nivel']) && isset($payload['id']) && $payload['nivel'] >= 0) {
         //return $response->withJson($payload);
         $response = $next($request, $response);
         //$response->getBody()->write('. Enjoy!');
     } else {
-        return $response->withStatus(401)->withJson(["msg" => "Não foi encontrado o claim 'nivel' no payload do JWT."]);
+        return $response->withStatus(401)->withJson(["msg" => "Não foi encontrado o claim 'nivel' ou 'id' no payload do JWT."]);
     }
 
     return $response;
@@ -190,3 +172,45 @@ $app->group('/v1', function () use ($app) {
 require_once __DIR__ . '\..\Middlewares\Middleware.php';
 
 $app->run();
+
+/*
+$sql = "SELECT * FROM users WHERE email= :email";
+$sth = $this->db->prepare($sql);
+$sth->bindParam("email", $input['email']);
+$sth->execute();
+$user = $sth->fetchObject();
+
+// verify email address.
+if(!$user) {
+return $this->response->withJson(['error' => true, 'message' => 'These credentials do not match our records.']);
+}
+
+// verify password.
+if (!password_verify($input['password'],$user->password)) {
+return $this->response->withJson(['error' => true, 'message' => 'These credentials do not match our records.']);
+}
+$settings = $this->get('settings'); // get settings array.
+ */
+
+//$token = JWT::encode(['id' => $user->id, 'email' => $user->email], "SECRET", "HS256");
+
+// implementar expire time
+
+/*
+use \Firebase\JWT\JWT;
+use \Tuupola\Base62;
+
+$now = new DateTime();
+$future = new DateTime("now +2 hours");
+$jti = Base62::encode(random_bytes(16));
+
+$secret = "your_secret_key";
+
+$payload = [
+"jti" => $jti,
+"iat" => $now->getTimeStamp(),
+"nbf" => $future->getTimeStamp()
+];
+
+$token = JWT::encode($payload, $secret, "HS256");
+ */

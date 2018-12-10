@@ -26,7 +26,7 @@ class GenericDAO extends Conexao
         $this->colunasDB = $colunasDB;
     }
 
-    public function get(bool $desc = false, int $id = null, string $idBD = 'id', string $view = null, string $queryPersonalizada = null)
+    public function get(bool $desc = false, int $id = null, bool $notExcluido = false, string $whereClause = null, string $queryPersonalizada = null, string $idBD = 'id', string $view = null)
     {
         $data = null;
         try {
@@ -43,6 +43,14 @@ class GenericDAO extends Conexao
                 $query = "SELECT * FROM " . $this->nomeEntidadeDB;
             }
 
+            if ($notExcluido && $whereClause == null) {
+                $query .= " WHERE NOT (excluido <=> '1')";
+            }
+
+            if ($whereClause) {
+                $query .= " " . $whereClause;
+            }
+
             // se é pra retornar na ordem descendente
             if ($desc) {
                 $query .= " ORDER by id DESC";
@@ -53,6 +61,7 @@ class GenericDAO extends Conexao
                 $query .= " WHERE $idBD=$id LIMIT 1";
                 return $data = $this->pdo->query($query)->fetch(\PDO::FETCH_ASSOC);
             } else {
+                //echo $query;
                 $data = $this->query($query);
             }
 
@@ -65,7 +74,7 @@ class GenericDAO extends Conexao
         }
     }
 
-    public function delete($id, $idBD = 'id', $view = null, $query = null)
+    public function delete(int $id, bool $excluidoAtributo = false, $idBD = 'id', $view = null, $query = null)
     {
         try {
             if ($id == null) {
@@ -75,7 +84,9 @@ class GenericDAO extends Conexao
                 ];
             } else {
 
-                $query = "DELETE FROM " . $this->nomeEntidadeDB . " WHERE $idBD=$id";
+                $query = $excluidoAtributo ? "UPDATE " . $this->nomeEntidadeDB . " SET `excluido` = 'S' WHERE $idBD=$id;" : "DELETE FROM " . $this->nomeEntidadeDB . " WHERE $idBD=$id";
+
+                //echo $query;
 
                 //$data = $this->query($query);
 
@@ -88,7 +99,10 @@ class GenericDAO extends Conexao
                             "id_recebido" => $id,
                         ];
                     } else {
-                        $data = $this->nomeEntidade . " deletado(a)";
+                        $data = [
+                            "msg" => $this->nomeEntidade . " deletado(a)",
+                            "affected_rows" => $statement->rowCount(),
+                        ];
                     }
 
                     /* close statement */
@@ -147,7 +161,6 @@ class GenericDAO extends Conexao
 
                     // UPDATE
                     if (isset($id) && isset($idBD)) {
-
                         $method = " atualizado(a)";
 
                         $query = "UPDATE " . $this->nomeEntidadeDB . " SET ";
@@ -159,7 +172,8 @@ class GenericDAO extends Conexao
                         }
 
                         $query .= " WHERE $idBD = $id;";
-
+                        //print_r($json_aa);
+                        //echo $query;
                     }
                     // CREATE
                     else {
@@ -221,6 +235,11 @@ class GenericDAO extends Conexao
     }
 
     // UTILITY
+
+    public function lastInserted()
+    {
+        return $this->pdo->lastInsertId();
+    }
 
     public static function construct($array)
     {

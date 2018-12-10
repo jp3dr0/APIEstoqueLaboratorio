@@ -19,6 +19,7 @@ class ComposerStaticInitfe0ca3ba3978e9a8f15096ae71d6a3b9
         array (
             'Tuupola\\Middleware\\' => 19,
             'Tuupola\\Http\\Factory\\' => 21,
+            'Tuupola\\' => 8,
         ),
         'S' => 
         array (
@@ -60,6 +61,10 @@ class ComposerStaticInitfe0ca3ba3978e9a8f15096ae71d6a3b9
         'Tuupola\\Http\\Factory\\' => 
         array (
             0 => __DIR__ . '/..' . '/tuupola/http-factory/src',
+        ),
+        'Tuupola\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/tuupola/base62/src',
         ),
         'Slim\\' => 
         array (
