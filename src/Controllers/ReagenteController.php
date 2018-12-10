@@ -157,6 +157,7 @@ final class ReagenteController extends GenericController implements RouteableInt
 
     private function updateReagente(Request $request, Response $response): Response
     {
+        //echo $request->getAttribute('id');
         $post = $this->getDAO()->post($request->getBody(), $request->getAttribute('id'));
         if ($post['affected_rows'] > 0) {
             $operacaoController = new OperacaoController();

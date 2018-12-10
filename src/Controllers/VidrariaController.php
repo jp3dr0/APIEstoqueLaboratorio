@@ -25,7 +25,7 @@ final class VidrariaController extends GenericController implements RouteableInt
         $allowed = $request->getAttribute('decoded_token_data')['nivel'] >= 3;
         switch ($request->getMethod()) {
             case 'GET':
-                return isset($args['id']) ? $this->getVidraria()($response, $request->getAttribute('id')) : $this->getVidrarias($response);
+                return isset($args['id']) ? $this->getVidraria($response, $request->getAttribute('id')) : $this->getVidrarias($response);
                 break;
             case 'POST':
                 return $allowed ? $this->createVidraria($request, $response) : $response->withStatus(401)->withJson(["msg" => "Você não tem as permissões necessárias para fazer isso."]);
@@ -118,7 +118,7 @@ final class VidrariaController extends GenericController implements RouteableInt
         }
     }
 
-    private function createReagente(Request $request, Response $response): Response
+    private function createVidraria(Request $request, Response $response): Response
     {
         $post = $this->getDAO()->post($request->getBody());
         if ($post['affected_rows'] > 0) {
@@ -167,7 +167,7 @@ final class VidrariaController extends GenericController implements RouteableInt
 
     private function getVidrarias(Response $response): Response
     {
-        $objs = $this->getDAO()->get(true);
+        $objs = $this->getDAO()->get(true, null, true);
 
         for ($i = 0; $i < sizeof($objs); $i++) {
             $objs[$i] = $this->joinObjects($objs[$i]);

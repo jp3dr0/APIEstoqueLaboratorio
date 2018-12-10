@@ -84,7 +84,7 @@ class GenericDAO extends Conexao
                 ];
             } else {
 
-                $query = $excluidoAtributo ? "UPDATE " . $this->nomeEntidadeDB . " SET `excluido` = 'S' WHERE $idBD=$id;" : "DELETE FROM " . $this->nomeEntidadeDB . " WHERE $idBD=$id";
+                $query = $excluidoAtributo ? "UPDATE " . $this->nomeEntidadeDB . " SET `excluido` = '1' WHERE $idBD=$id;" : "DELETE FROM " . $this->nomeEntidadeDB . " WHERE $idBD=$id";
 
                 //echo $query;
 
@@ -119,6 +119,7 @@ class GenericDAO extends Conexao
 
     public function post($body, $id = null, $idBD = 'id', $query = null)
     {
+        //echo "metodo post chamado. id: " . $id;
         try {
             $json_obj = json_decode($body);
             $json_aa = json_decode($body, true);
@@ -161,6 +162,7 @@ class GenericDAO extends Conexao
 
                     // UPDATE
                     if (isset($id) && isset($idBD)) {
+                        //echo " - UTU - ";
                         $method = " atualizado(a)";
 
                         $query = "UPDATE " . $this->nomeEntidadeDB . " SET ";
@@ -176,9 +178,11 @@ class GenericDAO extends Conexao
                         //echo $query;
                     }
                     // CREATE
-                    else {
+                    else if ($id == null) {
+                        //echo " - CREATE - ";
                         $method = " criado(a)";
                         $query = "INSERT INTO " . $this->nomeEntidadeDB . " (" . implode(", ", $colunasJson) . ") VALUES (" . implode(", ", $statementValues) . ");";
+                        //echo $query;
                     }
 
                     $statement = $this->pdo->prepare($query);
