@@ -22,7 +22,7 @@ final class VidrariaController extends GenericController implements RouteableInt
 
     public function handleRequest(Request $request, Response $response, array $args): Response
     {
-        $allowed = $request->getAttribute('decoded_token_data')['nivel'] >= 3;
+        $allowed = $request->getAttribute('decoded_token_data')['nivel'] >= 2;
         switch ($request->getMethod()) {
             case 'GET':
                 return isset($args['id']) ? $this->getVidraria($response, $request->getAttribute('id')) : $this->getVidrarias($response);

@@ -43,7 +43,7 @@ abstract class GenericController
         $data = $data . " " . $args['id'];
         }
          */
-        if ($onlyAdmin && $request->getAttribute('decoded_token_data')['nivel'] < 3) {
+        if ($onlyAdmin && $request->getAttribute('decoded_token_data')['nivel'] < 2) {
             return $response->withStatus(401)->withJson(["msg" => "Você não tem as permissões necessárias para fazer isso."]);
         }
         return $response->withStatus($error ? $error : 200)->withJson($data);
